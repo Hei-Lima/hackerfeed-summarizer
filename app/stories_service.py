@@ -11,13 +11,13 @@ class FormatedStory:
     translated_title: str | None = None
 
 class StoriesService:
-    def GetStories(self, top: int = 5):
-        stories_id = self._FetchTopStoriesIds(top)
-        formated_stories = self._FetchTopStoriesContent(stories_id)
+    def get_stories(self, top: int = 5):
+        stories_id = self._fetch_top_stories_ids(top)
+        formated_stories = self._fetch_top_stories_content(stories_id)
             
         return formated_stories
 
-    def _FetchTopStoriesIds(self, top: int):
+    def _fetch_top_stories_ids(self, top: int):
         fetch_url = "https://hacker-news.firebaseio.com/v0/topstories.json"
         response = requests.get(fetch_url)
         stories = response.json()
@@ -25,7 +25,7 @@ class StoriesService:
 
         return top_stories
 
-    def _FetchTopStoriesContent(self, ids: list[int]) -> list[FormatedStory]:
+    def _fetch_top_stories_content(self, ids: list[int]) -> list[FormatedStory]:
         formated_stories: list[FormatedStory] = list()
 
         for id in ids:
@@ -39,8 +39,9 @@ class StoriesService:
         return formated_stories
 
     @staticmethod
-    def formatStoriesListToJson(formated_stories: list[FormatedStory]):
+    def format_stories_list_to_json(formated_stories: list[FormatedStory]):
         stories_dict = [asdict(story) for story in formated_stories]
         json_output = json.dumps(stories_dict, ensure_ascii=False, indent=2)
 
-        return json_output
+        return json_output
+

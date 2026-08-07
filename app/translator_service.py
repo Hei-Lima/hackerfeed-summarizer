@@ -19,7 +19,7 @@ class TranslatorService:
                 """
         self.model = model
 
-    def TranslateStories(self, formated_stories: list[FormatedStory]):
+    def translate_stories(self, formated_stories: list[FormatedStory]):
         input_data = json.dumps([{"title": story.title, "url": story.url} for story in formated_stories])
         full_prompt = f"{self.prompt}\n{input_data}"
 
@@ -37,10 +37,10 @@ class TranslatorService:
         
         translations: list[str] = json.loads(response.text)
 
-        self._FormatStories(translations, formated_stories)
+        self._format_stories(translations, formated_stories)
 
         return formated_stories
 
-    def _FormatStories(self, translations: list[str], stories: list[FormatedStory]) -> None:
+    def _format_stories(self, translations: list[str], stories: list[FormatedStory]) -> None:
         for i, translation in enumerate(translations):
             stories[i].translated_title = translation

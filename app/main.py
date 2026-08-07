@@ -14,14 +14,16 @@ def main():
     model = getenv("GOOGLE_GEMINI_MODEL")
 
     print("Conseguindo as stories...")
-    stories = StoriesService().GetStories()
+    stories = StoriesService().get_stories()
 
     print("Traduzindo...")
-    translated_stories = TranslatorService(client=client, model=model).TranslateStories(stories)
+    translated_stories = TranslatorService(client=client, model=model).translate_stories(stories)
 
-    sender = SenderService(translated_stories).Send()
+    if translated_stories:
+        SenderService(translated_stories).send()
 
-    print(StoriesService.formatStoriesListToJson(translated_stories))
+    print(StoriesService.format_stories_list_to_json(translated_stories or []))
+
     
 
 if __name__ == "__main__":
