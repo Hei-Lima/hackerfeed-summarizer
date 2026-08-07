@@ -11,37 +11,35 @@ class FormatedStory:
     translated_title: str | None = None
 
 class StoriesService:
-    def get_stories(self, top: int = 5):
-        stories_id = self._fetch_top_stories_ids(top)
-        formated_stories = self._fetch_top_stories_content(stories_id)
-            
-        return formated_stories
-
-    def _fetch_top_stories_ids(self, top: int):
-        fetch_url = "https://hacker-news.firebaseio.com/v0/topstories.json"
+    def get_stories(self, top: int = 5) -> list[FormatedStory]:
+        # Busca todas as notícias da front page em 1 ÚNICA chamada HTTP (API da Algolia)
+        fetch_url = "https://hn.algolia.com/api/v1/search?tags=front_page"
         response = requests.get(fetch_url)
-        stories = response.json()
-        top_stories = stories[0:top]
+        data = response.json()
 
-        return top_stories
+        hits = data.get("hits", [])
+        formated_stories: list[FormatedStory] = []
 
-    def _fetch_top_stories_content(self, ids: list[int]) -> list[FormatedStory]:
-        formated_stories: list[FormatedStory] = list()
+        for item in hits:
+            story_id = int(item.get("objectID", 0))
+            title = item.get("title") or ""
+            likes = int(item.get("points") or 0)
+            url = item.get("url") or f"https://news.ycombinator.com/item?id={story_id}"
 
-        for id in ids:
-            fetch_url = f"https://hacker-news.firebaseio.com/v0/item/{id}.json"
-            response = requests.get(fetch_url)
-            story = response.json()
-            formated_story = FormatedStory(id=id, title=story["title"], likes=story["score"], url=story["url"])
+            if title:
+                formated_stories.append(
+                    FormatedStory(id=story_id, title=title, likes=likes, url=url)
+                )
 
-            formated_stories.append(formated_story)
+        # Ordena as notícias pelo número de likes (do maior para o menor)
+        formated_stories.sort(key=lambda story: story.likes, reverse=True)
 
-        return formated_stories
+        # Retorna os top N mais curtidos
+        return formated_stories[:top]
 
     @staticmethod
-    def format_stories_list_to_json(formated_stories: list[FormatedStory]):
+    def format_stories_list_to_json(formated_stories: list[FormatedStory]) -> str:
         stories_dict = [asdict(story) for story in formated_stories]
-        json_output = json.dumps(stories_dict, ensure_ascii=False, indent=2)
+        return json.dumps(stories_dict, ensure_ascii=False, indent=2)
 
-        return json_output
 
